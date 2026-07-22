@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Perfil</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<aside th:class="'sidebar ' + (${user.rol.name() == 'ADMIN'} ? 'admin' : (${user.rol.name() == 'DOCENTE'} ? 'docente' : 'alumno'))">
+    <div class="brand">
+        <div th:class="'brand-logo ' + (${user.rol.name() == 'ADMIN'} ? 'admin' : (${user.rol.name() == 'DOCENTE'} ? 'docente' : ''))">CL</div>
+        <div><h1>CodeLevels</h1><span th:text="'Perfil ' + ${rolLabel}">Perfil</span></div>
+    </div>
+    <nav>
+        <a th:href="@{${retorno}}">Volver al panel</a>
+        <a class="active" th:href="@{/perfil}">Mi perfil</a>
+        <a th:if="${user.rol.name() == 'ALUMNO'}" th:href="@{/alumno/retos}">Retos</a>
+        <a th:if="${user.rol.name() == 'ALUMNO'}" th:href="@{/alumno/laboratorio}">Laboratorio</a>
+        <a th:if="${user.rol.name() == 'DOCENTE'}" th:href="@{/docente/dashboard#estudiantes}">Seguimiento</a>
+        <a th:if="${user.rol.name() == 'ADMIN'}" th:href="@{/admin/dashboard#usuarios}">Usuarios</a>
+        <form th:action="@{/logout}" method="post"><button>Cerrar sesión</button></form>
+    </nav>
+</aside>
+
+<main class="main profile-main">
+    <header class="topbar">
+        <div>
+            <p th:class="'kicker ' + (${user.rol.name() == 'ADMIN'} ? 'admin' : (${user.rol.name() == 'DOCENTE'} ? 'docente' : ''))">Perfil de usuario</p>
+            <h2>Mi perfil en CodeLevels</h2>
+        </div>
+        <span th:class="'role-badge ' + (${user.rol.name() == 'ADMIN'} ? 'admin' : (${user.rol.name() == 'DOCENTE'} ? 'docente' : 'alumno'))" th:text="'ROLE_' + ${user.rol}">ROLE</span>
+    </header>
+
+    <div class="alert success" th:if="${okPerfil}" th:text="${okPerfil}"></div>
+
+    <section class="profile-hero" th:style="${#strings.isEmpty(user.portadaUrl)} ? '' : 'background-image: linear-gradient(180deg, rgba(2,6,23,.25), rgba(2,6,23,.92)), url(' + ${user.portadaUrl} + ')'">
+        <div class="profile-cover-actions">
+            <span class="pill profile-pill">Perfil profesional</span>
+            <a class="btn glass-light" href="#editar-perfil">Editar perfil</a>
+        </div>
+        <div class="profile-identity">
+            <div class="profile-avatar-xl" th:style="${#strings.isEmpty(user.fotoUrl)} ? '' : 'background-image:url(' + ${user.fotoUrl} + ')'">
+                <span th:if="${#strings.isEmpty(user.fotoUrl)}" th:text="${#strings.substring(user.nombre,0,1)}">U</span>
+            </div>
+            <div>
+                <p class="profile-kicker" th:text="${rolLabel} + ' CodeLevels'">Rol</p>
+                <h1 th:text="'¡Hola, ' + ${user.nombre} + '!'">Hola</h1>
+                <div class="profile-meta">
+                    <span th:text="${user.email}">email</span>
+                    <span th:text="${user.rol}">ROL</span>
+                    <span th:text="${#strings.isEmpty(user.sede)} ? 'UTP Ate' : ${user.sede}">Sede</span>
+                </div>
+                <p class="profile-description" th:text="${#strings.isEmpty(user.descripcion)} ? 'Personaliza tu perfil y muestra tu avance dentro de la plataforma CodeLevels.' : ${user.descripcion}">Descripción</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile-stats-grid">
+        <article class="profile-stat-card"><span th:text="${completados}">0</span><small th:text="${user.rol.name() == 'ALUMNO'} ? 'Retos completados' : 'Retos completados por el aula'">Retos</small></article>
+        <article class="profile-stat-card"><span th:text="${puntos}">0</span><small th:text="${user.rol.name() == 'ALUMNO'} ? 'Puntos acumulados' : 'Puntos registrados'">Puntos</small></article>
+        <article class="profile-stat-card"><span th:text="${totalRetos}">0</span><small>Retos disponibles</small></article>
+        <article class="profile-stat-card"><span th:text="${user.rol.name() == 'ALUMNO'} ? 'Java' : ${usuarios}">Java</span><small th:text="${user.rol.name() == 'ALUMNO'} ? 'Lenguaje objetivo' : 'Usuarios del sistema'">Dato</small></article>
+    </section>
+
+    <section class="profile-grid">
+        <article class="panel profile-card">
+            <h3>Resumen del perfil</h3>
+            <div class="profile-list">
+                <div><strong>Nombre</strong><span th:text="${user.nombre}">Nombre</span></div>
+                <div><strong>Correo</strong><span th:text="${user.email}">Correo</span></div>
+                <div><strong>Rol</strong><span th:text="${user.rol}">Rol</span></div>
+                <div><strong>Carrera / Área</strong><span th:text="${#strings.isEmpty(user.carrera)} ? 'Ingeniería de Sistemas' : ${user.carrera}">Carrera</span></div>
+                <div><strong>Sede</strong><span th:text="${#strings.isEmpty(user.sede)} ? 'UTP Ate' : ${user.sede}">Sede</span></div>
+                <div><strong>Estado</strong><span th:text="${user.activo ? 'Activo' : 'Inactivo'}">Activo</span></div>
+            </div>
+        </article>
+
+        <article class="panel profile-card" id="editar-perfil">
+            <h3>Personalización</h3>
+            <p class="muted-text">Puedes usar enlaces de imagen para foto y portada. Si los dejas vacíos, se mostrará un diseño automático.</p>
+            <form class="profile-form" th:action="@{/perfil}" method="post">
+                <label>Nombre visible</label>
+                <input name="nombre" type="text" th:value="${user.nombre}" maxlength="120" required>
+
+                <label>Descripción</label>
+                <textarea name="descripcion" maxlength="700" placeholder="Ejemplo: Estudiante de primeros ciclos practicando lógica de programación..." th:text="${user.descripcion}"></textarea>
+
+                <label>Carrera o área</label>
+                <input name="carrera" type="text" th:value="${user.carrera}" maxlength="80" placeholder="Ingeniería de Sistemas">
+
+                <label>Sede</label>
+                <input name="sede" type="text" th:value="${user.sede}" maxlength="80" placeholder="UTP Ate">
+
+                <label>URL de foto de perfil</label>
+                <input name="fotoUrl" type="url" th:value="${user.fotoUrl}" maxlength="500" placeholder="https://.../foto.png">
+
+                <label>URL de portada</label>
+                <input name="portadaUrl" type="url" th:value="${user.portadaUrl}" maxlength="500" placeholder="https://.../portada.png">
+
+                <button class="btn primary" type="submit">Guardar cambios</button>
+            </form>
+        </article>
+    </section>
+
+    <section class="panel profile-role-panel">
+        <h3>Accesos rápidos según rol</h3>
+        <div class="profile-actions-grid">
+            <a class="quick-card" th:href="@{${retorno}}"><b>Panel</b><span>Volver a tu vista principal.</span></a>
+            <a class="quick-card" th:if="${user.rol.name() == 'ALUMNO'}" th:href="@{/alumno/retos}"><b>Retos</b><span>Practicar lógica y desbloquear código Java.</span></a>
+            <a class="quick-card" th:if="${user.rol.name() == 'ALUMNO'}" th:href="@{/alumno/laboratorio}"><b>Laboratorio</b><span>Crear algoritmos libres con bloques.</span></a>
+            <a class="quick-card" th:if="${user.rol.name() == 'DOCENTE'}" th:href="@{/docente/dashboard#estudiantes}"><b>Seguimiento</b><span>Revisar avance de estudiantes.</span></a>
+            <a class="quick-card" th:if="${user.rol.name() == 'ADMIN'}" th:href="@{/admin/dashboard#nuevo-reto}"><b>Crear reto</b><span>Registrar nuevos ejercicios en PostgreSQL.</span></a>
+            <a class="quick-card" th:if="${user.rol.name() == 'ADMIN'}" th:href="@{/admin/dashboard#usuarios}"><b>Usuarios</b><span>Controlar roles y cuentas del sistema.</span></a>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>

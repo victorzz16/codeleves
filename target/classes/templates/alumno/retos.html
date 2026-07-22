@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Retos</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<aside class="sidebar alumno">
+    <div class="brand"><div class="brand-logo">CL</div><div><h1>CodeLevels</h1><span>Panel Alumno</span></div></div>
+    <nav>
+        <a  th:href="@{/alumno/dashboard}">Dashboard</a>
+        <a  th:href="@{/alumno/ruta}">Ruta</a>
+        <a class="active" th:href="@{/alumno/retos}">Retos</a>
+        <a  th:href="@{/alumno/laboratorio}">Laboratorio</a>
+        <a  th:href="@{/alumno/tutor}">Tutor</a>
+        <a  th:href="@{/alumno/progreso}">Progreso</a>
+        <a th:href="@{/alumno/examenes}">Exámenes</a>
+        <a th:href="@{/alumno/premium}">Plan Premium</a>
+        <a th:href="@{/perfil}">Mi perfil</a>
+        <form th:action="@{/logout}" method="post"><button>Cerrar sesión</button></form>
+    </nav>
+</aside>
+<main id="contenido-principal" class="main">
+    <header class="topbar"><div><p class="kicker">Práctica guiada</p><h2>Retos interactivos</h2></div><span class="role-badge alumno">Alumno</span></header>
+    <section class="premium-unlock-banner" th:if="${!esPremium}"><div><b>Desbloquea los retos Pro</b><span>Accede a matrices, POO, colecciones y casos avanzados por S/ 30 al mes.</span></div><a class="btn primary" th:href="@{/alumno/premium}">Ver Premium</a></section>
+
+    <section class="challenge-layout">
+        <aside class="panel challenge-list">
+            <button class="challenge-item" th:each="reto : ${retos}"
+                    th:classappend="${reto.premium} ? ' premium-challenge' : ''"
+                    th:disabled="${reto.premium and !esPremium}"
+                    th:attr="data-id=${reto.id},data-premium=${reto.premium},data-title=${reto.titulo},data-difficulty=${reto.dificultad},data-category=${reto.categoria},data-description=${reto.descripcion},data-blocks=${reto.bloquesJson},data-solution=${reto.solucionJson},data-hints=${reto.pistasJson},data-java=${reto.codigoJava}">
+                <strong th:text="${reto.titulo}">Reto</strong>
+                <small th:text="${reto.dificultad} + ' · ' + ${reto.categoria}">Básico</small>
+                <span class="premium-mini" th:if="${reto.premium}" th:text="${esPremium ? 'PRO' : '🔒 PRO'}">PRO</span>
+            </button>
+        </aside>
+
+        <article class="panel workspace">
+            <div class="challenge-title-row"><span id="difficulty" class="pill">Selecciona</span><span id="category" class="pill muted">Categoría</span></div>
+            <h3 id="challengeTitle">Selecciona un reto</h3>
+            <p id="challengeDescription">El reto se cargará aquí.</p>
+
+            <div class="workspace-grid">
+                <div>
+                    <h4>Bloques disponibles</h4>
+                    <div id="blockBank" class="block-bank"></div>
+                </div>
+                <div>
+                    <h4>Tu algoritmo</h4>
+                    <div id="solutionZone" class="solution-zone"><span class="empty">Agrega bloques para construir la solución.</span></div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn soft" id="btnHint">Pedir pista</button>
+                <button class="btn soft" id="btnClear">Limpiar</button>
+                <button class="btn primary" id="btnValidate">Validar lógica</button>
+            </div>
+
+            <div class="feedback" id="feedbackBox"><strong>Feedback</strong><p>Valida para recibir orientación.</p></div>
+            <pre class="code-panel"><code id="javaCode">// Aquí aparecerá el código Java cuando la lógica sea correcta.</code></pre>
+        </article>
+    </section>
+
+
+    <section class="variable-lab panel">
+        <div class="exam-head">
+            <div>
+                <p class="kicker">Reconocimiento de variables</p>
+                <h3>Analizador rápido de variables Java</h3>
+                <p>Escribe líneas de código Java y CodeLevels detectará variables, tipo de dato y posibles errores básicos.</p>
+            </div>
+            <button class="btn soft" id="btnVariableExample" type="button">Cargar ejemplo</button>
+        </div>
+        <div class="variable-grid">
+            <div>
+                <label for="variableCode">Código o declaraciones</label>
+                <textarea id="variableCode" placeholder="Ejemplo:
+int edad = 18;
+double promedio = 14.5;
+String nombre = "Luis";
+boolean aprobado = true;"></textarea>
+                <div class="actions">
+                    <button class="btn primary" id="btnAnalyzeVariables" type="button">Reconocer variables</button>
+                    <button class="btn soft" id="btnClearVariables" type="button">Limpiar</button>
+                </div>
+            </div>
+            <div>
+                <h4>Resultado del análisis</h4>
+                <div id="variableResult" class="feedback">
+                    <strong>Guía</strong>
+                    <p>El analizador reconoce tipos como int, double, String, boolean, char, long y float.</p>
+                </div>
+                <div id="variableTableWrap"></div>
+            </div>
+        </div>
+    </section>
+
+</main>
+<script th:src="@{/js/retos.js}"></script>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>

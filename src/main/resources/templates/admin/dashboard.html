@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Administrador</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<aside class="sidebar admin">
+    <div class="brand"><div class="brand-logo admin">CL</div><div><h1>CodeLevels</h1><span>Panel Administrador</span></div></div>
+    <nav>
+        <a class="active" th:href="@{/admin/dashboard}">Dashboard admin</a>
+        <a href="#usuarios">Gestión de usuarios</a>
+        <a href="#nuevo-usuario">Crear usuario</a>
+        <a href="#nuevo-reto">Crear reto</a>
+        <a href="#solicitudes-retos">Solicitudes de retos</a>
+        <a href="#retos">Gestión de retos</a>
+        <a href="#sistema">Estado del sistema</a>
+        <a th:href="@{/perfil}">Mi perfil</a>
+        <form th:action="@{/logout}" method="post"><button>Cerrar sesión</button></form>
+    </nav>
+</aside>
+
+<main id="contenido-principal" class="main admin-main">
+    <header class="topbar">
+        <div><p class="kicker admin">Administrador</p><h2>Panel de control general</h2></div>
+        <span class="role-badge admin">ROLE_ADMIN</span>
+    </header>
+
+    <section class="hero-card admin">
+        <div>
+            <span class="pill admin">Administración global</span>
+            <h3>Controla usuarios, roles, retos y estado de la plataforma.</h3>
+            <p>El administrador no comparte el mismo panel que el alumno ni el docente. Su vista está orientada a gestión técnica, seguridad, roles y mantenimiento del sistema.</p>
+        </div>
+        <div class="hero-widget"><strong th:text="${totalRetos}">0</strong><span>Retos registrados</span></div>
+    </section>
+
+    <section class="stats-grid">
+        <article class="stat admin"><strong th:text="${alumnos}">0</strong><span>Alumnos</span></article>
+        <article class="stat admin"><strong th:text="${docentes}">0</strong><span>Docentes</span></article>
+        <article class="stat admin"><strong th:text="${admins}">0</strong><span>Administradores</span></article>
+        <article class="stat admin"><strong th:text="${activos}">0</strong><span>Usuarios activos</span></article>
+        <article class="stat admin"><strong th:text="${solicitudesPendientes}">0</strong><span>Solicitudes pendientes</span></article>
+    </section>
+
+    <section class="panel admin-panel" id="sistema">
+        <h3>Estado técnico de la plataforma</h3>
+        <div class="path-grid">
+            <div><b>21</b><span>Java</span><small>Versión del JDK utilizada.</small></div>
+            <div><b>SB</b><span>Spring Boot</span><small>Backend MVC y servicios.</small></div>
+            <div><b>SEC</b><span>Spring Security</span><small>Login y autorización por roles.</small></div>
+            <div><b>PG</b><span>PostgreSQL</span><small>Base de datos administrada desde pgAdmin.</small></div>
+        </div>
+    </section>
+
+    <section class="panel" id="usuarios">
+        <h3>Gestión de usuarios y roles</h3>
+        <p class="muted-text">Vista administrativa para verificar cuentas, roles y estado de acceso.</p>
+        <table>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th></tr></thead>
+            <tbody>
+            <tr th:each="u : ${usuarios}">
+                <td th:text="${u.id}"></td>
+                <td th:text="${u.nombre}"></td>
+                <td th:text="${u.email}"></td>
+                <td><span class="mini-badge" th:text="${u.rol}"></span></td>
+                <td th:text="${u.activo ? 'Activo' : 'Inactivo'}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+
+    <section class="panel admin-panel" id="nuevo-usuario">
+        <h3>Crear cuentas de Docente y Administrador</h3>
+        <p class="muted-text">Desde este módulo el administrador puede registrar nuevos docentes y también crear otros administradores del sistema.</p>
+
+        <div class="alert success" th:if="${okUsuario}" th:text="${okUsuario}"></div>
+        <div class="alert error" th:if="${errorUsuario}" th:text="${errorUsuario}"></div>
+
+        <form class="admin-form-grid" th:action="@{/admin/usuarios}" method="post">
+            <div>
+                <label for="nombreUsuario">Nombre completo</label>
+                <input id="nombreUsuario" name="nombre" type="text" maxlength="120" placeholder="Ejemplo: Yair Mendoza" required>
+            </div>
+            <div>
+                <label for="emailUsuario">Correo institucional</label>
+                <input id="emailUsuario" name="email" type="email" maxlength="150" placeholder="docente@utp.edu.pe" required>
+            </div>
+            <div>
+                <label for="passwordUsuario">Contraseña temporal</label>
+                <input id="passwordUsuario" name="password" type="password" minlength="6" placeholder="Mínimo 6 caracteres" required>
+            </div>
+            <div>
+                <label for="rolUsuario">Rol de acceso</label>
+                <select id="rolUsuario" name="rol" required>
+                    <option value="DOCENTE">Docente</option>
+                    <option value="ADMIN">Administrador</option>
+                </select>
+                <small class="muted-text">El alumno se gestiona desde registro o carga académica; este módulo es para personal autorizado.</small>
+            </div>
+            <div>
+                <label for="sedeUsuario">Sede</label>
+                <input id="sedeUsuario" name="sede" type="text" maxlength="80" value="UTP Ate">
+            </div>
+            <div>
+                <label for="carreraUsuario">Área / carrera</label>
+                <input id="carreraUsuario" name="carrera" type="text" maxlength="80" value="Ingeniería de Sistemas">
+            </div>
+            <div class="form-wide actions">
+                <button class="btn primary" type="submit">Crear cuenta</button>
+                <a class="btn soft" href="#usuarios">Ver usuarios registrados</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel admin-panel" id="nuevo-reto">
+        <h3>Crear nuevo reto</h3>
+        <p class="muted-text">Desde este módulo el administrador puede agregar retos nuevos. Al guardar, el reto se registra en PostgreSQL y aparece automáticamente en el panel del alumno.</p>
+
+        <div class="alert success" th:if="${okReto}" th:text="${okReto}"></div>
+        <div class="alert error" th:if="${errorReto}" th:text="${errorReto}"></div>
+
+        <form class="admin-form-grid" th:action="@{/admin/retos}" method="post">
+            <div>
+                <label for="titulo">Título del reto</label>
+                <input id="titulo" name="titulo" type="text" maxlength="120" placeholder="Ejemplo: Calcular promedio de notas" required>
+            </div>
+            <div>
+                <label for="dificultad">Dificultad</label>
+                <select id="dificultad" name="dificultad" required>
+                    <option value="Básico">Básico</option>
+                    <option value="Medio">Medio</option>
+                    <option value="Avanzado">Avanzado</option>
+                    <option value="Arreglos">Arreglos</option>
+                </select>
+            </div>
+            <div>
+                <label for="categoria">Categoría</label>
+                <input id="categoria" name="categoria" type="text" maxlength="60" placeholder="Condicionales, Bucles, Arreglos..." required>
+            </div>
+            <div class="form-wide">
+                <label for="descripcion">Descripción del problema</label>
+                <textarea id="descripcion" name="descripcion" maxlength="500" placeholder="Describe qué debe resolver el estudiante." required></textarea>
+            </div>
+            <div class="form-wide">
+                <label for="bloques">Bloques disponibles</label>
+                <textarea id="bloques" name="bloques" placeholder="Escribe un bloque por línea.&#10;Ejemplo:&#10;▶ Inicio del programa&#10;📥 Leer nota 1&#10;📥 Leer nota 2&#10;➕ Calcular promedio&#10;📤 Mostrar resultado" required></textarea>
+                <small class="muted-text">Cada línea será un bloque. El primer bloque tiene índice 0, el segundo índice 1, y así sucesivamente.</small>
+            </div>
+            <div>
+                <label for="solucion">Orden correcto</label>
+                <input id="solucion" name="solucion" type="text" placeholder="Ejemplo: 0,1,2,3,4" required>
+                <small class="muted-text">Usa los índices de los bloques separados por coma.</small>
+            </div>
+            <div>
+                <label for="pistas">Pistas</label>
+                <textarea id="pistas" name="pistas" placeholder="Escribe una pista por línea.&#10;Ejemplo: Primero lee los datos.&#10;Luego realiza la operación.&#10;Finalmente muestra el resultado."></textarea>
+            </div>
+            <div class="form-wide">
+                <label for="codigoJava">Código Java para NetBeans</label>
+                <textarea id="codigoJava" name="codigoJava" class="code-input" placeholder="Pega aquí el código Java que se mostrará cuando el alumno resuelva el reto." required></textarea>
+            </div>
+            <div class="form-wide actions">
+                <button class="btn primary" type="submit">Guardar reto</button>
+                <a class="btn soft" href="#retos">Ver banco de retos</a>
+            </div>
+        </form>
+    </section>
+
+
+    <section class="panel admin-panel" id="solicitudes-retos">
+        <h3>Solicitudes de nuevos retos</h3>
+        <p class="muted-text">Aquí llegan las solicitudes enviadas por los docentes. El administrador puede aprobarlas, rechazarlas o dejarlas pendientes. Si se aprueba, luego puedes crear el reto completo desde el módulo “Crear reto”.</p>
+
+        <div class="alert success" th:if="${okSolicitudAdmin}" th:text="${okSolicitudAdmin}"></div>
+        <div class="alert error" th:if="${errorSolicitudAdmin}" th:text="${errorSolicitudAdmin}"></div>
+
+        <div class="request-grid">
+            <article class="request-card" th:each="s : ${solicitudes}">
+                <div class="request-head">
+                    <div>
+                        <span class="mini-badge" th:text="${s.estado}">PENDIENTE</span>
+                        <h4 th:text="${s.titulo}">Reto solicitado</h4>
+                    </div>
+                    <small th:text="${s.creadoEn}">fecha</small>
+                </div>
+                <p th:text="${s.descripcion}">Descripción</p>
+                <div class="mini-rubric">
+                    <div><b>Dificultad:</b> <span th:text="${s.dificultad}"></span></div>
+                    <div><b>Categoría:</b> <span th:text="${s.categoria}"></span></div>
+                    <div><b>Docente:</b> <span th:text="${s.docente.nombre}"></span></div>
+                </div>
+                <p class="muted-text" th:text="${s.justificacion != null && !s.justificacion.isBlank() ? s.justificacion : 'Sin justificación adicional.'}"></p>
+                <form class="admin-form-grid compact-form" th:action="@{/admin/solicitudes-retos/revisar}" method="post">
+                    <input type="hidden" name="solicitudId" th:value="${s.id}">
+                    <div>
+                        <label>Estado</label>
+                        <select name="estado">
+                            <option value="PENDIENTE" th:selected="${s.estado == 'PENDIENTE'}">Pendiente</option>
+                            <option value="APROBADA" th:selected="${s.estado == 'APROBADA'}">Aprobada</option>
+                            <option value="RECHAZADA" th:selected="${s.estado == 'RECHAZADA'}">Rechazada</option>
+                        </select>
+                    </div>
+                    <div class="form-wide">
+                        <label>Respuesta al docente</label>
+                        <textarea name="respuestaAdmin" maxlength="700" placeholder="Ejemplo: Aprobado. Se creará el reto esta semana." th:text="${s.respuestaAdmin}"></textarea>
+                    </div>
+                    <div class="form-wide actions">
+                        <button class="btn primary" type="submit">Actualizar solicitud</button>
+                        <a class="btn soft" href="#nuevo-reto">Crear reto basado en solicitud</a>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    <section class="panel" id="retos">
+        <h3>Banco completo de retos</h3>
+        <p class="muted-text">Retos cargados automáticamente en la base de datos para que el alumno practique por niveles.</p>
+        <table>
+            <thead><tr><th>ID</th><th>Reto</th><th>Dificultad</th><th>Categoría</th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${retos}">
+                <td th:text="${r.id}"></td>
+                <td th:text="${r.titulo}"></td>
+                <td th:text="${r.dificultad}"></td>
+                <td th:text="${r.categoria}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel" id="progreso">
+        <h3>Auditoría de progreso</h3>
+        <div class="stats-grid compact">
+            <article class="stat admin"><strong th:text="${totalProgresos}">0</strong><span>Registros de progreso</span></article>
+            <article class="stat admin"><strong th:text="${retosCompletados}">0</strong><span>Retos completados</span></article>
+            <article class="stat admin"><strong>JPA</strong><span>Persistencia</span></article>
+            <article class="stat admin"><strong>CRUD</strong><span>Escalable</span></article>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>

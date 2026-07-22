@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Iniciar sesión</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="auth-body login-pro-body">
+<main class="login-pro-shell">
+    <section class="login-pro-visual" aria-label="Presentación de CodeLevels">
+        <div class="login-pro-overlay"></div>
+        <div class="login-pro-visual-content">
+            <div class="login-brand-row">
+                <div class="login-brand-mark" aria-hidden="true">CL</div>
+                <div>
+                    <span class="login-eyebrow">PLATAFORMA EDUCATIVA</span>
+                    <h1>CodeLevels</h1>
+                    <p class="login-university">Universidad Tecnológica del Perú</p>
+                </div>
+            </div>
+
+            <div class="login-hero-copy">
+                <span class="login-pill">Logic first · Java next</span>
+                <h2>Aprende lógica de programación paso a paso.</h2>
+                <p>Practica con retos, exámenes por nivel, tutor, rutas personalizadas y seguimiento de progreso.</p>
+            </div>
+
+            <div class="login-feature-grid">
+                <article><span>01</span><strong>Retos interactivos</strong><small>Bloques, variables y código Java.</small></article>
+                <article><span>02</span><strong>Exámenes por nivel</strong><small>Básico, intermedio y avanzado.</small></article>
+                <article><span>03</span><strong>Seguimiento real</strong><small>Progreso, notas y retroalimentación.</small></article>
+                <article><span>04</span><strong>Accesibilidad</strong><small>Modo oscuro, contraste y daltonismo.</small></article>
+            </div>
+
+
+    </section>
+
+    <section class="login-pro-panel">
+        <div class="login-pro-card">
+            <img class="login-utp-logo" src="/img/utp-logo.png" th:src="@{/img/utp-logo.png}" alt="Universidad Tecnológica del Perú">
+
+            <div class="login-form-heading">
+                <span class="login-eyebrow dark">ACCESO INSTITUCIONAL</span>
+                <h2>Bienvenido de nuevo</h2>
+                <p>Ingresa con tu cuenta para continuar en CodeLevels.</p>
+            </div>
+
+            <div th:if="${param.error}" class="alert error">Correo o contraseña incorrectos.</div>
+            <div th:if="${param.logout}" class="alert success">Sesión cerrada correctamente.</div>
+            <div th:if="${param.registered}" class="alert success">Usuario registrado. Ahora inicia sesión.</div>
+
+            <form class="login-pro-form" th:action="@{/login}" method="post">
+                <label for="email">Correo institucional</label>
+                <div class="login-input-wrap">
+                    <span aria-hidden="true">✉</span>
+                    <input id="email" type="email" name="email" placeholder="estudiante@utp.edu.pe" autocomplete="username" required>
+                </div>
+
+                <label for="password">Contraseña</label>
+                <div class="login-input-wrap">
+                    <span aria-hidden="true">🔒</span>
+                    <input id="password" type="password" name="password" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+                    <button class="login-password-toggle" type="button" id="togglePassword" aria-label="Mostrar contraseña">Ver</button>
+                </div>
+
+                <button class="btn primary login-main-button" type="submit">Iniciar sesión</button>
+            </form>
+
+            <div class="login-role-strip" aria-label="Roles disponibles">
+                <div><span>🎓</span><strong>Alumno</strong></div>
+                <div><span>👨‍🏫</span><strong>Docente</strong></div>
+                <div><span>⚙</span><strong>Administrador</strong></div>
+            </div>
+
+
+
+            <a th:href="@{/register}" class="login-register-link">¿Eres alumno nuevo? Crear cuenta</a>
+            <p class="login-footer">© 2026 CodeLevels · Universidad Tecnológica del Perú</p>
+        </div>
+    </section>
+</main>
+
+<script>
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    togglePassword?.addEventListener('click', () => {
+        const visible = passwordInput.type === 'text';
+        passwordInput.type = visible ? 'password' : 'text';
+        togglePassword.textContent = visible ? 'Ver' : 'Ocultar';
+        togglePassword.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+    });
+</script>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>

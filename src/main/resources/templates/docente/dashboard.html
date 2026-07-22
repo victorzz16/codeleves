@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Docente</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<aside class="sidebar docente">
+    <div class="brand"><div class="brand-logo docente">CL</div><div><h1>CodeLevels</h1><span>Panel Docente</span></div></div>
+    <nav>
+        <a class="active" th:href="@{/docente/dashboard}">Dashboard docente</a>
+        <a href="#tareas">Asignar tareas</a>
+        <a href="#crear-examen">Crear exámenes</a>
+        <a href="#revisar-examenes">Revisar exámenes</a>
+        <a href="#solicitar-reto">Solicitar retos</a>
+        <a href="#estudiantes">Seguimiento de alumnos</a>
+        <a href="#retos">Banco de retos</a>
+        <a th:href="@{/perfil}">Mi perfil</a>
+        <form th:action="@{/logout}" method="post"><button>Cerrar sesión</button></form>
+    </nav>
+</aside>
+<main id="contenido-principal" class="main docente-main">
+    <header class="topbar"><div><p class="kicker docente">Docente</p><h2>Panel de seguimiento académico</h2></div><span class="role-badge docente">ROLE_DOCENTE</span></header>
+
+    <section class="hero-card teacher">
+        <div>
+            <span class="pill">Gestión docente</span>
+            <h3>Asigna tareas, crea exámenes y solicita nuevos retos.</h3>
+            <p>El docente administra la actividad académica del aula. Las solicitudes de nuevos retos llegan al administrador para revisión y aprobación.</p>
+        </div>
+        <div class="hero-widget"><strong th:text="${alumnos}">0</strong><span>Alumnos registrados</span></div>
+    </section>
+
+    <section class="stats-grid">
+        <article class="stat teacher"><strong th:text="${alumnos}">0</strong><span>Alumnos</span></article>
+        <article class="stat teacher"><strong th:text="${totalTareas}">0</strong><span>Tareas asignadas</span></article>
+        <article class="stat teacher"><strong th:text="${totalExamenes}">0</strong><span>Exámenes creados</span></article>
+        <article class="stat teacher"><strong th:text="${totalSolicitudes}">0</strong><span>Solicitudes enviadas</span></article>
+        <article class="stat teacher"><strong th:text="${examenesPendientesRevision}">0</strong><span>Exámenes por revisar</span></article>
+    </section>
+
+    <section class="panel teacher-panel" id="tareas">
+        <h3>Asignar tareas</h3>
+        <p class="muted-text">Puedes asignar una tarea a todo el salón o a un estudiante específico.</p>
+        <div class="alert success" th:if="${okTarea}" th:text="${okTarea}"></div>
+        <div class="alert error" th:if="${errorTarea}" th:text="${errorTarea}"></div>
+        <form class="admin-form-grid" th:action="@{/docente/tareas}" method="post">
+            <div>
+                <label for="tituloTarea">Título</label>
+                <input id="tituloTarea" name="titulo" type="text" maxlength="140" placeholder="Ejemplo: Resolver condicionales" required>
+            </div>
+            <div>
+                <label for="alumnoTarea">Asignar a</label>
+                <select id="alumnoTarea" name="alumnoId">
+                    <option value="0">Todo el salón</option>
+                    <option th:each="u : ${usuarios}" th:value="${u.id}" th:text="${u.nombre + ' - ' + u.email}"></option>
+                </select>
+            </div>
+            <div>
+                <label for="dificultadTarea">Dificultad</label>
+                <select id="dificultadTarea" name="dificultad" required>
+                    <option value="Básico">Básico</option>
+                    <option value="Intermedio">Intermedio</option>
+                    <option value="Avanzado">Avanzado</option>
+                </select>
+            </div>
+            <div>
+                <label for="temaTarea">Tema</label>
+                <input id="temaTarea" name="tema" type="text" maxlength="70" placeholder="Variables, IF, bucles..." required>
+            </div>
+            <div>
+                <label for="fechaEntrega">Fecha de entrega</label>
+                <input id="fechaEntrega" name="fechaEntrega" type="date">
+            </div>
+            <div class="form-wide">
+                <label for="descripcionTarea">Descripción</label>
+                <textarea id="descripcionTarea" name="descripcion" maxlength="900" placeholder="Explica qué debe realizar el alumno." required></textarea>
+            </div>
+            <div class="form-wide actions"><button class="btn primary" type="submit">Asignar tarea</button></div>
+        </form>
+
+        <h3>Historial de tareas</h3>
+        <table>
+            <thead><tr><th>Tarea</th><th>Tema</th><th>Dificultad</th><th>Alumno</th><th>Entrega</th><th>Estado</th></tr></thead>
+            <tbody>
+            <tr th:each="t : ${tareas}">
+                <td th:text="${t.titulo}"></td>
+                <td th:text="${t.tema}"></td>
+                <td><span class="mini-badge" th:text="${t.dificultad}"></span></td>
+                <td th:text="${t.alumno != null ? t.alumno.nombre : 'Todo el salón'}"></td>
+                <td th:text="${t.fechaEntrega != null ? t.fechaEntrega : 'Sin fecha'}"></td>
+                <td th:text="${t.estado}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel teacher-panel" id="crear-examen">
+        <h3>Crear exámenes</h3>
+        <p class="muted-text">Crea evaluaciones con diferentes dificultades. Las preguntas se guardan y se publican para los alumnos.</p>
+        <div class="alert success" th:if="${okExamen}" th:text="${okExamen}"></div>
+        <div class="alert error" th:if="${errorExamen}" th:text="${errorExamen}"></div>
+        <form class="admin-form-grid" th:action="@{/docente/examenes}" method="post" enctype="multipart/form-data">
+            <div>
+                <label for="tituloExamen">Título del examen</label>
+                <input id="tituloExamen" name="titulo" type="text" maxlength="140" placeholder="Examen de variables" required>
+            </div>
+            <div>
+                <label for="dificultadExamen">Dificultad</label>
+                <select id="dificultadExamen" name="dificultad" required>
+                    <option value="Básico">Básico</option>
+                    <option value="Intermedio">Intermedio</option>
+                    <option value="Avanzado">Avanzado</option>
+                </select>
+            </div>
+            <div>
+                <label for="temaExamen">Tema</label>
+                <input id="temaExamen" name="tema" type="text" maxlength="70" placeholder="Variables / Condicionales / Bucles" required>
+            </div>
+            <div>
+                <label for="tiempoExamen">Tiempo en minutos</label>
+                <input id="tiempoExamen" name="tiempoMinutos" type="number" min="5" max="180" value="30" required>
+            </div>
+            <div class="form-wide">
+                <label for="descripcionExamen">Descripción</label>
+                <textarea id="descripcionExamen" name="descripcion" maxlength="900" placeholder="Objetivo del examen." required></textarea>
+            </div>
+            <div class="form-wide">
+                <label for="preguntasExamen">Preguntas</label>
+                <textarea id="preguntasExamen" name="preguntas" placeholder="Escribe una pregunta por línea.&#10;Ejemplo: ¿Qué tipo de dato usarías para una edad?&#10;¿Qué operador compara igualdad en Java?" required></textarea>
+                <small class="muted-text">Cada línea se guarda como pregunta base del examen.</small>
+            </div>
+            <div class="form-wide">
+                <label for="archivoExamen">Adjuntar preguntas en imagen o PDF</label>
+                <input id="archivoExamen" name="archivoExamen" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg">
+                <small class="muted-text">Opcional. Sirve para subir una hoja de preguntas, captura o PDF del examen.</small>
+            </div>
+            <div class="form-wide actions"><button class="btn primary" type="submit">Crear examen</button></div>
+        </form>
+
+        <section id="examenes">
+            <h3>Exámenes creados</h3>
+            <table>
+                <thead><tr><th>Examen</th><th>Dificultad</th><th>Tema</th><th>Tiempo</th><th>Archivo</th><th>Publicado</th></tr></thead>
+                <tbody>
+                <tr th:each="e : ${examenesDocente}">
+                    <td th:text="${e.titulo}"></td>
+                    <td><span class="mini-badge" th:text="${e.dificultad}"></span></td>
+                    <td th:text="${e.tema}"></td>
+                    <td th:text="${e.tiempoMinutos + ' min'}"></td>
+                    <td>
+                        <a class="mini-link" th:if="${e.archivoUrl != null && !e.archivoUrl.isBlank()}" th:href="${e.archivoUrl}" target="_blank">Ver archivo</a>
+                        <span th:unless="${e.archivoUrl != null && !e.archivoUrl.isBlank()}">Sin archivo</span>
+                    </td>
+                    <td th:text="${e.publicado ? 'Sí' : 'No'}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </section>
+
+
+
+    <section class="panel teacher-panel" id="revisar-examenes">
+        <h3>Revisar exámenes enviados por alumnos</h3>
+        <p class="muted-text">Aquí llegan los exámenes resueltos. Puedes revisar el texto, abrir el Word/PDF del alumno, colocar nota y enviar retroalimentación.</p>
+        <div class="alert success" th:if="${okRevision}" th:text="${okRevision}"></div>
+        <div class="alert error" th:if="${errorRevision}" th:text="${errorRevision}"></div>
+        <div class="submission-list">
+            <article class="submission-card" th:each="en : ${entregasExamen}">
+                <div class="submission-head">
+                    <div>
+                        <span class="mini-badge" th:text="${en.estado}">PENDIENTE</span>
+                        <h4 th:text="${en.examen.titulo}">Examen</h4>
+                        <p><b>Alumno:</b> <span th:text="${en.alumno.nombre}"></span> · <span th:text="${en.alumno.email}"></span></p>
+                    </div>
+                    <button class="btn soft" type="button" onclick="window.print()" th:if="${en.estado == 'CALIFICADO'}">Exportar PDF</button>
+                </div>
+                <div class="mini-rubric">
+                    <div><b>Dificultad:</b> <span th:text="${en.examen.dificultad}"></span></div>
+                    <div><b>Tema:</b> <span th:text="${en.examen.tema}"></span></div>
+                    <div><b>Enviado:</b> <span th:text="${#temporals.format(en.enviadoEn, 'dd/MM/yyyy HH:mm')}"></span></div>
+                    <div><b>Nota:</b> <span th:text="${en.calificacion != null ? en.calificacion + '/20' : 'Pendiente'}"></span></div>
+                </div>
+                <div class="answer-box">
+                    <strong>Respuesta escrita</strong>
+                    <p th:text="${en.respuestaTexto != null && !en.respuestaTexto.isBlank() ? en.respuestaTexto : 'El alumno no escribió respuesta en texto.'}"></p>
+                    <a class="btn soft" th:if="${en.archivoUrl != null && !en.archivoUrl.isBlank()}" th:href="${en.archivoUrl}" target="_blank">Abrir Word/PDF entregado</a>
+                </div>
+                <form class="admin-form-grid compact-form" th:action="@{'/docente/entregas-examen/' + ${en.id} + '/calificar'}" method="post">
+                    <div>
+                        <label th:for="${'nota-' + en.id}">Nota de 0 a 20</label>
+                        <input th:id="${'nota-' + en.id}" name="calificacion" type="number" min="0" max="20" th:value="${en.calificacion != null ? en.calificacion : 0}" required>
+                    </div>
+                    <div class="form-wide">
+                        <label th:for="${'retro-' + en.id}">Retroalimentación para el alumno</label>
+                        <textarea th:id="${'retro-' + en.id}" name="retroalimentacion" maxlength="1000" th:text="${en.retroalimentacion}" placeholder="Explica qué hizo bien y qué debe mejorar."></textarea>
+                    </div>
+                    <div class="form-wide actions"><button class="btn primary" type="submit">Guardar calificación y notificar</button></div>
+                </form>
+            </article>
+            <p class="muted-text" th:if="${#lists.isEmpty(entregasExamen)}">Aún no hay exámenes enviados por alumnos.</p>
+        </div>
+    </section>
+
+    <section class="panel teacher-panel" id="solicitar-reto">
+        <h3>Solicitar nuevo reto al administrador</h3>
+        <p class="muted-text">Cuando necesites un reto nuevo para el aula, envía una solicitud. El administrador la revisará en su panel.</p>
+        <div class="alert success" th:if="${okSolicitud}" th:text="${okSolicitud}"></div>
+        <div class="alert error" th:if="${errorSolicitud}" th:text="${errorSolicitud}"></div>
+        <form class="admin-form-grid" th:action="@{/docente/solicitudes-retos}" method="post">
+            <div>
+                <label for="tituloSolicitud">Título sugerido</label>
+                <input id="tituloSolicitud" name="titulo" type="text" maxlength="140" placeholder="Reto de promedio ponderado" required>
+            </div>
+            <div>
+                <label for="dificultadSolicitud">Dificultad</label>
+                <select id="dificultadSolicitud" name="dificultad" required>
+                    <option value="Básico">Básico</option>
+                    <option value="Intermedio">Intermedio</option>
+                    <option value="Avanzado">Avanzado</option>
+                </select>
+            </div>
+            <div>
+                <label for="categoriaSolicitud">Categoría</label>
+                <input id="categoriaSolicitud" name="categoria" type="text" maxlength="70" placeholder="Variables, bucles, arreglos..." required>
+            </div>
+            <div class="form-wide">
+                <label for="descripcionSolicitud">Descripción del reto</label>
+                <textarea id="descripcionSolicitud" name="descripcion" maxlength="1000" required></textarea>
+            </div>
+            <div class="form-wide">
+                <label for="justificacionSolicitud">Justificación académica</label>
+                <textarea id="justificacionSolicitud" name="justificacion" maxlength="1000" placeholder="Explica por qué este reto ayudaría al aula."></textarea>
+            </div>
+            <div class="form-wide actions"><button class="btn primary" type="submit">Enviar solicitud</button></div>
+        </form>
+    </section>
+
+    <section class="panel" id="solicitudes">
+        <h3>Mis solicitudes enviadas</h3>
+        <table>
+            <thead><tr><th>Reto solicitado</th><th>Dificultad</th><th>Categoría</th><th>Estado</th><th>Respuesta admin</th></tr></thead>
+            <tbody>
+            <tr th:each="s : ${solicitudes}">
+                <td th:text="${s.titulo}"></td>
+                <td th:text="${s.dificultad}"></td>
+                <td th:text="${s.categoria}"></td>
+                <td><span class="mini-badge" th:text="${s.estado}"></span></td>
+                <td th:text="${s.respuestaAdmin != null && !s.respuestaAdmin.isBlank() ? s.respuestaAdmin : 'Pendiente de revisión'}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="estudiantes" class="panel">
+        <h3>Seguimiento de alumnos</h3>
+        <table>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th></tr></thead>
+            <tbody>
+            <tr th:each="u : ${usuarios}">
+                <td th:text="${u.id}"></td>
+                <td th:text="${u.nombre}"></td>
+                <td th:text="${u.email}"></td>
+                <td><span class="mini-badge" th:text="${u.rol}"></span></td>
+                <td th:text="${u.activo ? 'Activo' : 'Inactivo'}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="retos" class="panel">
+        <h3>Banco de retos</h3>
+        <table>
+            <thead><tr><th>Reto</th><th>Dificultad</th><th>Categoría</th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${retos}">
+                <td th:text="${r.titulo}"></td>
+                <td th:text="${r.dificultad}"></td>
+                <td th:text="${r.categoria}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>

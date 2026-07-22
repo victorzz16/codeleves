@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Registro</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="auth-body">
+<section class="auth-shell small">
+    <form class="auth-form" th:action="@{/register}" th:object="${user}" method="post">
+        <h2>Crear cuenta de alumno</h2>
+        <p>El registro crea usuarios con rol ALUMNO.</p>
+
+        <label>Nombre completo</label>
+        <input th:field="*{nombre}" type="text" placeholder="Nombre del estudiante" required>
+
+        <label>Correo</label>
+        <input th:field="*{email}" type="email" placeholder="correo@utp.edu.pe" required>
+        <small th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></small>
+
+        <label>Contraseña</label>
+        <input th:field="*{password}" type="password" placeholder="Mínimo 6 caracteres" required>
+
+        <button class="btn primary" type="submit">Registrar alumno</button>
+        <a th:href="@{/login}" class="auth-link">Volver al login</a>
+    </form>
+</section>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>

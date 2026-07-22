@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Premium</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<aside class="sidebar alumno">
+    <div class="brand"><div class="brand-logo">CL</div><div><h1>CodeLevels</h1><span>Panel Alumno</span></div></div>
+    <nav>
+        <a th:href="@{/alumno/dashboard}">Dashboard</a><a th:href="@{/alumno/ruta}">Ruta</a>
+        <a th:href="@{/alumno/retos}">Retos</a><a th:href="@{/alumno/laboratorio}">Laboratorio</a>
+        <a th:href="@{/alumno/tutor}">Tutor</a><a th:href="@{/alumno/progreso}">Progreso</a>
+        <a th:href="@{/alumno/examenes}">Exámenes</a><a class="active" th:href="@{/alumno/premium}">Plan Premium</a>
+        <a th:href="@{/perfil}">Mi perfil</a>
+        <form th:action="@{/logout}" method="post"><button>Cerrar sesión</button></form>
+    </nav>
+</aside>
+<main class="main premium-page checkout-layout">
+    <header class="topbar"><div><p class="kicker">CodeLevels Pro</p><h2>Plan Premium</h2></div><span class="premium-chip" th:text="${user.premium ? 'PREMIUM ACTIVO' : 'PLAN PRO'}">PLAN PRO</span></header>
+
+    <section class="premium-hero compact-premium-hero">
+        <div>
+            <span class="pill">Acceso mensual</span>
+            <h3>Desbloquea todo CodeLevels por <strong>S/ 30.00</strong></h3>
+            <p>Retos avanzados, tutor Pro, simulacros exclusivos, reportes PDF y laboratorio avanzado.</p>
+            <div class="premium-status" th:if="${user.premium}">
+                <b>Tu plan está activo</b>
+                <span th:if="${user.premiumHasta != null}" th:text="'Vigente hasta ' + ${user.premiumHasta}"></span>
+            </div>
+        </div>
+        <div class="premium-price"><span>S/</span><strong>30</strong><small>por mes</small></div>
+    </section>
+
+    <section class="checkout-shell" th:unless="${user.premium}">
+        <div class="checkout-titlebar">
+            <a class="checkout-back" th:href="@{/alumno/dashboard}" aria-label="Volver">←</a>
+            <h3>Confirmar compra</h3>
+            <span></span>
+        </div>
+
+        <div class="checkout-order-card">
+            <div class="checkout-user-row">
+                <div class="checkout-avatar">CL</div>
+                <div><b th:text="${user.nombre}">Alumno</b><small th:text="${user.email}">correo@utp.edu.pe</small></div>
+            </div>
+            <div class="checkout-product-row">
+                <div><span class="checkout-product-icon">★</span><div><b>CodeLevels Premium</b><small>Acceso Pro durante 30 días</small></div></div>
+                <strong>S/ 30.00</strong>
+            </div>
+            <div class="checkout-item-count"><span></span><em>1 producto</em><span></span></div>
+        </div>
+
+        <div class="checkout-total-block">
+            <h3>Total: <strong>S/ 30.00</strong></h3>
+            <p>Pago único mensual. No se renueva automáticamente.</p>
+        </div>
+
+        <div class="checkout-payment-card">
+            <p class="checkout-section-label">Selecciona un método de pago</p>
+            <div class="checkout-methods" id="paymentMethods">
+                <button type="button" data-method="TARJETA" class="selected"><span class="method-symbol">▣</span><b>Tarjeta</b></button>
+                <button type="button" data-method="YAPE"><span class="method-symbol yape-symbol">Y</span><b>Yape</b></button>
+                <button type="button" data-method="PLIN"><span class="method-symbol plin-symbol">P</span><b>Plin</b></button>
+                <button type="button" data-method="PAGO_EFECTIVO"><span class="method-symbol pe-symbol">PE</span><b>Pago Efectivo</b></button>
+            </div>
+
+            <div id="paymentFields" class="checkout-payment-fields"></div>
+
+            <label class="checkout-save-data"><input type="checkbox"> Guardar de manera segura los datos de pago para un futuro uso</label>
+            <button class="checkout-pay-button" id="btnPay" type="button">Pagar S/ 30.00</button>
+            <p class="checkout-security">🔒 Pago protegido · Simulación académica, no se realiza ningún cobro real.</p>
+        </div>
+
+        <div class="checkout-help">
+            <p>¿Necesitas ayuda? Contacta con el equipo de asistencia.</p>
+            <span>💬</span>
+        </div>
+    </section>
+
+    <section class="panel" th:if="${user.premium}">
+        <h3>Funciones Pro desbloqueadas</h3>
+        <div class="premium-benefits">
+            <article><b>Retos Premium</b><span>Ejercicios avanzados basados en la rúbrica del curso.</span></article>
+            <article><b>Tutor Pro</b><span>Pistas avanzadas y rutas personalizadas.</span></article>
+            <article><b>Exámenes Pro</b><span>Simulacros y resultados exportables en PDF.</span></article>
+            <article><b>Laboratorio Pro</b><span>Prácticas integradoras y casos reales.</span></article>
+        </div>
+        <div class="actions"><a class="btn primary" th:href="@{/alumno/retos}">Abrir retos Pro</a><a class="btn soft" th:href="@{/alumno/tutor}">Abrir Tutor Pro</a></div>
+    </section>
+
+    <section class="panel" th:if="${!pagos.isEmpty()}">
+        <h3>Historial de pagos</h3>
+        <table><thead><tr><th>Operación</th><th>Método</th><th>Monto</th><th>Estado</th><th>Fecha</th></tr></thead>
+        <tbody><tr th:each="p : ${pagos}"><td th:text="${p.operacion}"></td><td th:text="${p.metodo}"></td><td th:text="'S/ ' + ${p.monto}"></td><td th:text="${p.estado}"></td><td th:text="${p.creadoEn}"></td></tr></tbody></table>
+    </section>
+</main>
+
+<div class="payment-modal" id="paymentModal" aria-hidden="true">
+    <div class="payment-modal-card checkout-success-card">
+        <div class="success-icon">✓</div>
+        <p class="kicker">OPERACIÓN COMPLETADA</p>
+        <h3>Pago confirmado</h3>
+        <p>¡Ya eres Premium! Tus funciones Pro se desbloquearon correctamente.</p>
+        <span id="paymentOperation"></span>
+        <button class="btn primary" id="btnContinue" type="button">Ir a mi panel Premium</button>
+    </div>
+</div>
+<script th:src="@{/js/premium.js}"></script><script th:src="@{/js/accessibility.js}"></script>
+</body></html>

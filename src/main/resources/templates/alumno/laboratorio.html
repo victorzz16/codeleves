@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Laboratorio</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<aside class="sidebar alumno">
+    <div class="brand"><div class="brand-logo">CL</div><div><h1>CodeLevels</h1><span>Panel Alumno</span></div></div>
+    <nav>
+        <a  th:href="@{/alumno/dashboard}">Dashboard</a>
+        <a  th:href="@{/alumno/ruta}">Ruta</a>
+        <a  th:href="@{/alumno/retos}">Retos</a>
+        <a class="active" th:href="@{/alumno/laboratorio}">Laboratorio</a>
+        <a  th:href="@{/alumno/tutor}">Tutor</a>
+        <a  th:href="@{/alumno/progreso}">Progreso</a>
+        <a th:href="@{/alumno/examenes}">Exámenes</a>
+        <a th:href="@{/alumno/premium}">Plan Premium</a>
+        <a th:href="@{/perfil}">Mi perfil</a>
+        <form th:action="@{/logout}" method="post"><button>Cerrar sesión</button></form>
+    </nav>
+</aside>
+<main id="contenido-principal" class="main">
+    <header class="topbar"><div><p class="kicker">Constructor libre</p><h2>Laboratorio de lógica</h2></div><span class="role-badge alumno">Alumno</span></header>
+    <section class="lab-grid">
+        <article class="panel">
+            <label>Problema de la vida real</label>
+            <textarea id="problem" placeholder="Ejemplo: calcular si un estudiante aprobó según su promedio final..."></textarea>
+            <h3>Agregar bloques</h3>
+            <div class="chip-grid">
+                <button data-chip="📥 Entrada de datos">Entrada</button>
+                <button data-chip="📦 Declarar variable">Variable</button>
+                <button data-chip="➕ Realizar operación">Operación</button>
+                <button data-chip="🔀 Decisión condicional">Decisión</button>
+                <button data-chip="🔁 Bucle o repetición">Bucle</button>
+                <button data-chip="📤 Mostrar resultado">Salida</button>
+            </div>
+            <div id="flow" class="solution-zone"></div>
+            <button id="analyze" class="btn primary">Analizar mi lógica</button>
+        </article>
+        <article class="panel">
+            <h3>Resultado del análisis</h3>
+            <div id="labFeedback" class="feedback"><strong>Guía</strong><p>Agrega bloques y analiza tu flujo.</p></div>
+        </article>
+    </section>
+
+    <section class="panel pro-feature-panel" th:classappend="${esPremium} ? ' unlocked' : ' locked'">
+        <span class="premium-chip">FUNCIÓN PRO</span><h3>Laboratorio Pro</h3><p>Practica depuración, matrices, POO, colecciones y casos tipo entrevista técnica.</p>
+        <div th:if="${esPremium}" class="feedback success"><strong>Desbloqueado</strong><p>Tu membresía Premium está activa.</p></div>
+        <a th:unless="${esPremium}" class="btn primary" th:href="@{/alumno/premium}">Desbloquear por S/ 30</a>
+    </section>
+</main>
+<script th:src="@{/js/laboratorio.js}"></script>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>

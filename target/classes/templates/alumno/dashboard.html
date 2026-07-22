@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Alumno</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<aside class="sidebar alumno">
+    <div class="brand"><div class="brand-logo">CL</div><div><h1>CodeLevels</h1><span>Panel Alumno</span></div></div>
+    <nav>
+        <a class="active" th:href="@{/alumno/dashboard}">Dashboard</a>
+        <a  th:href="@{/alumno/ruta}">Ruta</a>
+        <a  th:href="@{/alumno/retos}">Retos</a>
+        <a  th:href="@{/alumno/laboratorio}">Laboratorio</a>
+        <a  th:href="@{/alumno/tutor}">Tutor</a>
+        <a  th:href="@{/alumno/progreso}">Progreso</a>
+        <a th:href="@{/alumno/examenes}">Exámenes</a>
+        <a th:href="@{/alumno/premium}">Plan Premium</a>
+        <a th:href="@{/perfil}">Mi perfil</a>
+        <form th:action="@{/logout}" method="post"><button>Cerrar sesión</button></form>
+    </nav>
+</aside>
+<main id="contenido-principal" class="main">
+    <header class="topbar">
+        <div><p class="kicker">Alumno</p><h2 th:text="'Hola, ' + ${user.nombre}">Hola estudiante</h2></div>
+        <span class="role-badge alumno">ROLE_ALUMNO</span>
+    </header>
+
+    <section class="hero-card student">
+        <div>
+            <span class="pill">Aprendizaje progresivo</span>
+            <h3>Practica lógica antes de escribir Java en NetBeans.</h3>
+            <p>Resuelve retos con bloques visuales, recibe feedback y desbloquea el código Java equivalente.</p>
+            <a class="btn primary" th:href="@{/alumno/retos}">Empezar retos</a>
+        </div>
+        <div class="hero-widget">
+            <strong th:text="${completados} + '/' + ${totalRetos}">0/0</strong>
+            <span>Retos completados</span>
+        </div>
+    </section>
+
+    <section class="premium-dashboard-card" th:classappend="${esPremium} ? ' active' : ''">
+        <div><span class="premium-chip" th:text="${esPremium ? 'PRO ACTIVO' : 'CODELEVELS PRO'}">CODELEVELS PRO</span>
+            <h3 th:text="${esPremium ? 'Tus funciones Premium están desbloqueadas' : 'Desbloquea el plan Premium por S/ 30'}"></h3>
+            <p th:text="${esPremium ? 'Accede a retos Pro, Tutor Pro, simulacros y laboratorio avanzado.' : 'Pago simulado con Yape, Plin, Pago Efectivo o tarjeta.'}"></p>
+        </div><a class="btn primary" th:href="@{/alumno/premium}" th:text="${esPremium ? 'Ver mi plan' : 'Activar Premium'}"></a>
+    </section>
+
+    <section class="stats-grid">
+        <article class="stat"><strong th:text="${completados}">0</strong><span>Retos completados</span></article>
+        <article class="stat"><strong th:text="${puntos}">0</strong><span>Puntos</span></article>
+        <article class="stat"><strong>Java</strong><span>Lenguaje objetivo</span></article>
+        <article class="stat"><strong>NetBeans</strong><span>IDE académico</span></article>
+        <article class="stat"><strong th:text="${notificacionesExamen}">0</strong><span>Exámenes calificados</span></article>
+    </section>
+
+    <section class="panel" th:if="${notificacionesExamen > 0}">
+        <h3>Notificación de examen</h3>
+        <p>Ya tienes examen(es) calificado(s). Revisa tu nota, la retroalimentación del docente y exporta el resultado en PDF.</p>
+        <div class="actions"><a class="btn primary" th:href="@{/alumno/examenes#mis-entregas}">Ver resultados calificados</a></div>
+    </section>
+
+    <section class="panel">
+        <h3>Ruta de aprendizaje</h3>
+        <div class="path-grid">
+            <div><b>1</b><span>Variables</span><small>Entrada y salida</small></div>
+            <div><b>2</b><span>Condicionales</span><small>if / else</small></div>
+            <div><b>3</b><span>Bucles</span><small>for / while</small></div>
+            <div><b>4</b><span>Arreglos</span><small>arrays en Java</small></div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h3>Evaluación y diagnóstico</h3>
+        <p>Realiza un examen rápido para identificar tu nivel actual en variables, condicionales, bucles y arreglos.</p>
+        <div class="actions">
+            <a class="btn primary" th:href="@{/alumno/examenes}">Ir a exámenes</a>
+            <a class="btn soft" th:href="@{/alumno/retos}">Practicar retos</a>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h3>Tareas asignadas por el docente</h3>
+        <p class="muted-text">Aquí verás las actividades que tu docente dejó para todo el salón o directamente para ti.</p>
+        <table>
+            <thead><tr><th>Tarea</th><th>Tema</th><th>Dificultad</th><th>Entrega</th><th>Estado</th></tr></thead>
+            <tbody>
+            <tr th:each="t : ${tareasAsignadas}">
+                <td th:text="${t.titulo}"></td>
+                <td th:text="${t.tema}"></td>
+                <td><span class="mini-badge" th:text="${t.dificultad}"></span></td>
+                <td th:text="${t.fechaEntrega != null ? t.fechaEntrega : 'Sin fecha'}"></td>
+                <td th:text="${t.estado}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h3>Exámenes publicados por docentes</h3>
+        <div class="exam-card-grid">
+            <article class="exam-card" th:each="e : ${examenesDocente}">
+                <span class="mini-badge" th:text="${e.dificultad}"></span>
+                <h4 th:text="${e.titulo}">Examen</h4>
+                <p th:text="${e.descripcion}"></p>
+                <small th:text="${e.tema + ' · ' + e.tiempoMinutos + ' minutos'}"></small>
+            </article>
+        </div>
+        <div class="actions"><a class="btn primary" th:href="@{/alumno/examenes}">Ver exámenes</a></div>
+    </section>
+
+</main>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>

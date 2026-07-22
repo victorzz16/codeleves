@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeLevels | Exámenes de nivel</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<aside class="sidebar alumno">
+    <div class="brand"><div class="brand-logo">CL</div><div><h1>CodeLevels</h1><span>Panel Alumno</span></div></div>
+    <nav>
+        <a th:href="@{/alumno/dashboard}">Dashboard</a>
+        <a th:href="@{/alumno/ruta}">Ruta</a>
+        <a th:href="@{/alumno/retos}">Retos</a>
+        <a th:href="@{/alumno/laboratorio}">Laboratorio</a>
+        <a th:href="@{/alumno/tutor}">Tutor</a>
+        <a th:href="@{/alumno/progreso}">Progreso</a>
+        <a class="active" th:href="@{/alumno/examenes}">Exámenes</a>
+        <a th:href="@{/alumno/premium}">Plan Premium</a>
+        <a th:href="@{/perfil}">Mi perfil</a>
+        <form th:action="@{/logout}" method="post"><button>Cerrar sesión</button></form>
+    </nav>
+</aside>
+<main id="contenido-principal" class="main">
+    <header class="topbar">
+        <div><p class="kicker">Evaluación diagnóstica</p><h2>Exámenes de nivel</h2></div>
+        <span class="role-badge alumno">Alumno</span>
+    </header>
+
+    <section class="exam-hero panel">
+        <div>
+            <span class="pill">Placement test</span>
+            <h3>Evalúa tu nivel y entrega exámenes del docente.</h3>
+            <p>Además del examen automático, ahora puedes descargar las preguntas del docente, subir tu Word/PDF resuelto y recibir una notificación cuando tu examen sea calificado.</p>
+        </div>
+        <div class="exam-score-card">
+            <strong th:text="${notificacionesExamen > 0 ? notificacionesExamen + ' calificado(s)' : 'Sin notificaciones'}">Sin notificaciones</strong>
+            <span>Notificaciones de examen</span>
+        </div>
+    </section>
+
+
+    <section class="panel" id="examenes-docente">
+        <h3>Exámenes publicados por docentes</h3>
+        <p class="muted-text">Estos exámenes fueron creados desde el panel docente y pueden usarse como evaluación por dificultad.</p>
+        <div class="alert success" th:if="${okEntrega}" th:text="${okEntrega}"></div>
+        <div class="alert error" th:if="${errorEntrega}" th:text="${errorEntrega}"></div>
+        <div class="exam-card-grid">
+            <article class="exam-card" th:each="e : ${examenesDocente}">
+                <span class="mini-badge" th:text="${e.dificultad}">Básico</span>
+                <h4 th:text="${e.titulo}">Examen docente</h4>
+                <p th:text="${e.descripcion}">Descripción</p>
+                <div class="mini-rubric">
+                    <div><b>Tema:</b> <span th:text="${e.tema}"></span></div>
+                    <div><b>Tiempo:</b> <span th:text="${e.tiempoMinutos + ' min'}"></span></div>
+                    <div><b>Docente:</b> <span th:text="${e.docente.nombre}"></span></div>
+                </div>
+                <a class="btn soft" th:if="${e.archivoUrl != null && !e.archivoUrl.isBlank()}" th:href="${e.archivoUrl}" target="_blank">Ver preguntas adjuntas</a>
+                <form class="student-submit-form" th:action="@{'/alumno/examenes/' + ${e.id} + '/entregar'}" method="post" enctype="multipart/form-data">
+                    <label th:for="${'respuesta-' + e.id}">Respuesta escrita</label>
+                    <textarea th:id="${'respuesta-' + e.id}" name="respuestaTexto" placeholder="Escribe aquí tu desarrollo o resumen de respuestas."></textarea>
+                    <label th:for="${'archivo-' + e.id}">Subir examen resuelto en Word o PDF</label>
+                    <input th:id="${'archivo-' + e.id}" name="archivoRespuesta" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                    <button class="btn primary" type="submit">Enviar al docente</button>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    <section class="panel" id="mis-entregas">
+        <h3>Mis exámenes enviados y notificaciones</h3>
+        <p class="muted-text">Cuando el docente califique, aparecerá tu nota y podrás exportar el resultado como PDF.</p>
+        <div class="submission-list">
+            <article class="submission-card" th:each="en : ${entregasExamen}">
+                <div class="submission-head">
+                    <div>
+                        <span class="mini-badge" th:text="${en.estado}">PENDIENTE</span>
+                        <h4 th:text="${en.examen.titulo}">Examen</h4>
+                        <p><b>Docente:</b> <span th:text="${en.docente.nombre}"></span></p>
+                    </div>
+                    <button class="btn soft" type="button" onclick="window.print()" th:if="${en.estado == 'CALIFICADO'}">Exportar PDF</button>
+                </div>
+                <div class="mini-rubric">
+                    <div><b>Dificultad:</b> <span th:text="${en.examen.dificultad}"></span></div>
+                    <div><b>Tema:</b> <span th:text="${en.examen.tema}"></span></div>
+                    <div><b>Enviado:</b> <span th:text="${#temporals.format(en.enviadoEn, 'dd/MM/yyyy HH:mm')}"></span></div>
+                    <div><b>Nota:</b> <span th:text="${en.calificacion != null ? en.calificacion + '/20' : 'Pendiente'}"></span></div>
+                </div>
+                <div class="alert success" th:if="${en.estado == 'CALIFICADO'}">Tu examen fue calificado. Revisa la retroalimentación y exporta este resultado en PDF.</div>
+                <div class="answer-box">
+                    <strong>Retroalimentación del docente</strong>
+                    <p th:text="${en.retroalimentacion != null && !en.retroalimentacion.isBlank() ? en.retroalimentacion : 'Aún no hay retroalimentación.'}"></p>
+                    <a class="btn soft" th:if="${en.archivoUrl != null && !en.archivoUrl.isBlank()}" th:href="${en.archivoUrl}" target="_blank">Ver archivo que envié</a>
+                </div>
+            </article>
+            <p class="muted-text" th:if="${#lists.isEmpty(entregasExamen)}">Todavía no has enviado exámenes del docente.</p>
+        </div>
+    </section>
+
+    <section class="panel exam-selector-panel">
+        <div class="exam-head">
+            <div>
+                <h3>Selecciona un examen</h3>
+                <p>Cada examen tiene dificultad, cantidad de preguntas y objetivo diferente.</p>
+            </div>
+            <button class="btn soft" id="btnClearHistory" type="button">Limpiar historial</button>
+        </div>
+        <div class="exam-card-grid" id="examCards"></div>
+    </section>
+
+    <section class="exam-layout">
+        <article class="panel exam-panel">
+            <div class="exam-head">
+                <div>
+                    <span class="pill" id="selectedExamDifficulty">Básico</span>
+                    <h3 id="selectedExamTitle">Examen básico de fundamentos</h3>
+                    <p id="selectedExamDescription">Selecciona una alternativa por pregunta. No es memorístico: mide razonamiento lógico.</p>
+                </div>
+                <button class="btn soft" id="btnResetExam" type="button">Reiniciar examen</button>
+            </div>
+            <form id="examForm" class="exam-form"></form>
+            <div class="actions">
+                <button class="btn primary" id="btnFinishExam" type="button">Calcular nivel</button>
+                <button class="btn soft" id="btnExportPdf" type="button" disabled>Exportar PDF</button>
+            </div>
+        </article>
+
+        <aside class="panel exam-result-panel">
+            <h3>Resultado</h3>
+            <div class="level-result" id="examResultBox">
+                <strong>—</strong>
+                <span>Completa el examen para ver tu nivel.</span>
+            </div>
+            <div class="exam-level-preview">
+                <span>Nivel actual</span>
+                <strong id="examLevelPreview">Sin evaluar</strong>
+            </div>
+            <div class="mini-rubric exam-rubric">
+                <div><span id="rubricVars">○</span> Variables</div>
+                <div><span id="rubricIf">○</span> Condicionales</div>
+                <div><span id="rubricLoops">○</span> Bucles</div>
+                <div><span id="rubricArrays">○</span> Arreglos</div>
+            </div>
+            <div class="feedback" id="examFeedback">
+                <strong>Guía</strong>
+                <p>El examen clasifica al estudiante como Novato, Aprendiz, Intermedio, Avanzado o Experto.</p>
+            </div>
+
+            <div class="exam-history-box">
+                <h3>Historial de exámenes</h3>
+                <div id="examHistory" class="exam-history-list"></div>
+            </div>
+        </aside>
+    </section>
+
+    <section class="panel pro-feature-panel" th:classappend="${esPremium} ? ' unlocked' : ' locked'">
+        <span class="premium-chip">FUNCIÓN PRO</span><h3>Simulacros Pro</h3><p>Accede a simulacros avanzados, diagnóstico por competencia y reportes PDF detallados.</p>
+        <div th:if="${esPremium}" class="feedback success"><strong>Desbloqueado</strong><p>Tu membresía Premium está activa.</p></div>
+        <a th:unless="${esPremium}" class="btn primary" th:href="@{/alumno/premium}">Desbloquear por S/ 30</a>
+    </section>
+</main>
+<script th:src="@{/js/examenes.js}"></script>
+<script th:src="@{/js/accessibility.js}"></script>
+</body>
+</html>
